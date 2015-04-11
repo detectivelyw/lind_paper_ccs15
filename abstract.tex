@@ -1,0 +1,17 @@
+\begin{abstract}
+
+The Operating System (OS) kernel is an essential component of modern computer systems, 
+yet despite substantial effort, kernels still contain bugs and are exploitable. 
+In this paper, we explained why existing techniques failed to protect the kernel effectively. 
+Moreover, to provide a solution, we devised a new metric that quantitatively measures and 
+evaluates the lines of code in the kernel that get executed to determine which portions of 
+the kernel are safe. Our key hypothesis is that commonly used kernel paths contain few bugs.   
+Results from using our metric suggest that our hypothesis is reasonable. 
+
+A new design for building secure systems was created using our metric. We implemented 
+a prototype system Lind, using our new design, which accesses only commonly used kernel paths, 
+and have a very small trusted computing base that places only limited trust in the privileged code. 
+Our experimental results show that Lind triggered less kernel bugs than other systems not using our 
+design. Therefore, the new design using our metric tends to result in more secure systems.  
+
+\end{abstract}
