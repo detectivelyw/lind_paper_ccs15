@@ -1,12 +1,17 @@
 \begin{abstract}
 
-Securing the Operating System (OS) kernel (or hypervisor) is essential for
-building secure systems.  Yet despite substantial effort, kernels still 
-contain bugs and are exploitable.  In this paper, we explain why existing 
-techniques fail to protect the kernel effectively.  Moreover, to ground our
+Securing privileged code (such as a kernel or hypervisor) is essential for
+computer security.  Yet despite substantial effort, privileged code 
+still contains exploitable vulnerabilities.  This has led to techniques
+such as system call filtering, operating system virtualization, and library
+OSes to allow secure computation of legacy code.  Unfortunately, these
+techniques also exhibit exploitable vulnerabilities and do a poor job of 
+preventing an attacker from exploiting flaws in the
+underlying system.  In this paper, we analyze why existing techniques fail 
+to protect the kernel effectively.  Moreover, to ground our
 analysis, we devise a metric that allows us to predict which portions
-of the kernel are less likely to contain vulnerabilities and which are more 
-risky.  This metric is based upon whether lines of code in the kernel get 
+of the kernel are less likely to contain vulnerabilities.
+This metric is based upon whether lines of code in the kernel get 
 executed by popular programs.  Our analysis shows that commonly used kernel 
 paths contain fewer vulnerabilities.   
 
