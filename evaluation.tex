@@ -57,9 +57,14 @@ Vulnerability    &  Native Linux OS  &  Lind  &  Graphene & VirtualBox\\
 \end{table*}
 
 \subsection{Evaluation Methodology}
+\cappos{Does the metric eval come here?  I thought we did that in Section 3?}
+\cappos{It may be better to organize / frame this with questions.  I know 
+we want to look at security, but can we be more specific?  Why is looking at
+normal apps interesting?  Is reachability (i.e. fuzzing) the only thing
+that matters?}
 We want to evaluate our metric, and new architecture and designs that came from our metric. 
 The methodology is we implement one new system Lind, using our new design, and compare it 
-with other systems not using our design. The comparison results will show if our system is better, 
+with other systems not using our design. The comparison results will show if our system is better, \cappos{Really?}
 which in turn will show if our metric is effective. 
 
 We conducted comparison between Lind and other systems, which were Native Linux, 
@@ -77,6 +82,11 @@ which is not our focus.
 \subsubsection{Security Evaluation}
 Since Lind aims at achieving a very secure system, and leverages our metric by using its 
 security-prioritized guidelines. We first focused on comparing the security of each of the systems.
+\cappos{We need to be sure to be very concrete when saying things like
+`security'.  It is important to be crystal clear what we mean.}
+
+\cappos{Do we need to fuzz Repy?  Do we need to argue what happens when
+Repy or NaCl have flaws?}
 
 Again, we used two approaches, system call fuzzing and running user applications, to obtain the
 kernel profiling data. 

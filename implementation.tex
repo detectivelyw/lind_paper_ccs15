@@ -8,6 +8,8 @@ implementation details of our system Lind in this section.
 \subsection{Two Basic Techniques: Google's Native Client and Repy Sandbox}
 In the implementation of Lind, we leveraged two existing technologies, Google's Native Client, 
 and Repy sandbox. We now give a brief introduction to those two technologies.
+\cappos{Perhaps briefly state our reason for selecting each before explaining 
+their details.}
 
 Google's Native Client (NaCl) is a sandbox for untrusted x86 native code \cite{NaCl:09}. 
 NaCl aims to give applications the computational performance of native applications 
@@ -84,6 +86,8 @@ an application in Lind are run in NaCl, a very high performance environment.
 This balances the performance of the system, with the ease of implementation and maintenance 
 of the Library OS component of Lind. 
 
+\cappos{Most of the rest of this isn't really central to the paper.  We 
+probably should not mention it (or at least not do so prominently.}
 Furthermore, this particular design and architecture for sandboxing ensures the programs are portable. 
 Programs running inside Lind are written to work against a standard POSIX glibc interface. 
 The Lind runtime is strictly user-level and designed to work on many different platforms including Linux, 
@@ -100,6 +104,9 @@ is low because the sandbox only incurs overhead when there is a system call; Lin
 for execution, allowing CPU-and-memory-intensive applications to run at speeds that are equivalent 
 to NaCl and near native speed. 
 
+\cappos{There is an important topic shift here.  We need to signal it.}
+\cappos{This also needs to be broken into multiple points / questions, I 
+feel.  It is too much for a single paragraph.}
 Regarding our dual-layer sandbox architecture, one fundamental question is: are two sandboxes 
 enough and necessary? Why do we only have two sandboxes? If sandboxing provides more security, 
 why not sandbox Repy sandbox's TCB and get more security? The answer to that question is: 

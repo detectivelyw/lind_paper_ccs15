@@ -7,13 +7,17 @@ computing systems.
 
 The kernel has to provide an interface to serve the requests from user applications for acquiring 
 essential system resources, such as memory, I/O, CPU, and etc. 
-All applications running in the system depend on the kernel to provide essential functionality. 
+All applications running in the system depend on the kernel to provide 
+essential functionality.   \cappos{Thus all code, even that which is 
+sandboxed or untrusted, will make calls that are eventually processed by the
+kernel.}
 
-However, the OS kernel is the privileged code that needs to be well protected. Access to the
+However, the OS kernel is privileged code that needs to be well protected. Access to the
 kernel code should be avoided as much as possible and be conducted in a very careful manner 
-if any contact is necessary. Failing to do this would lead to potential exploitation of kernel bugs and 
+whenever contact is necessary. Failing to do this would lead to potential exploitation of kernel bugs and 
 may lead to serious damage to the entire computing system.  
 
+\cappos{There is a shift in focus here.  We need to signal this somehow.}
 The OS kernel has always been an appealing target. During the past few years, 
 the exploitation of OS kernels has become a very serious problem that remains to be solved, 
 in spite of large amount of efforts devoted by researchers and practitioners. 
@@ -30,6 +34,8 @@ has more than doubled, from 6.6 MLOC in v2.6.11 to 16.9 MLOC in v3.10 \cite{Linu
 
 Opportunities for kernel exploitation are abundant. As an example consider the Linux kernel, 
 which has been plagued by common software flaws, such as stack and heap buffer overflows 
+\cappos{It seems like overkill to have all CVEs have their own cite.  Perhaps
+just have one cite for the CVE system and then just list the number?}
 \cite{CVE:20093234, CVE:20131828, CVE:20132892}, NULL pointer and pointer arithmetic errors 
 \cite{CVE:20050736, CVE:20092698}, memory disclosure vulnerabilities 
 \cite{CVE:20093002, CVE:20104073}, use-after-free and format string bugs 
@@ -41,11 +47,15 @@ poor argument sanitization vulnerabilities
 The exploitation of these bugs is particularly effective, 
 despite the existence of kernel protection mechanisms, 
 due to the weak separation between user and kernel space.
+\cappos{What point are you trying to make with the last bit here?}
 
 To build a secure computing system, it is critical to provide sufficient protection for the kernel and 
 prevent kernel exploitation from happening. Many previous attempts, including OS virtualization, 
 system call filtering, library OSes and etc. have tried to address this problem. However, 
-kernel exploitation still exist, and the problem has not been solved effectively, which leads to a 
+kernel exploitation still exist, and the problem has not been solved 
+effectively \cappos{This is a long sentence.  You may want to break it up.  }
+\cappos{You also would be making a stronger point if you could support the claim
+by showing flaws in those types of systems.}, which leads to a 
 fundamental question, why is it not working and what are we missing? After thinking about this
 question and examining previous work, we find that one key missing puzzle is that people do not know 
 clearly which part of the kernel are safe and can be exposed without potential dangers. Many previous
@@ -54,12 +64,23 @@ can be useful and help mitigate the problem, the proposed systems still get acce
 And the key is: the way they access the kernel has no difference than before, because they do not 
 know what's the best way to leverage the kernel securely. So, essentially, what they are doing is just moving 
 the attack surface from the previous place (between the user space and the kernel) to another place 
-(between the new proposed system and the kernel). The attack surface doesn't necessarily shrink. 
+(between the new proposed system and the kernel). The attack surface
+doesn't necessarily shrink.  \cappos{Is `shrinking' really the right thing
+to consider?  I think we will argue against LOC as the metric.}
 Therefore, the proposed solutions were not effective. 
 
 It would be more effective, if we can actually shrink the attack surface and have better control over 
 the interface exposed by the kernel. In another word, we need to be crystal clear about which portions of 
-the kernel are safe and which portions of the kernel are risky. To obtain this piece of critical information, we
+the kernel are safe and which portions of the kernel are risky.
+\cappos{The previous sentence is a key point.  We need to draw it out and
+justify it more.}  
+\cappos{The text that follows feels like bridge text into the next section.
+If so, it is much too long.  If you're trying to say what potential value
+a metric would have, then you probably need to start a new paragraph and
+make it clearer.  However, I think you talk about the value of the metric
+in 3.1 as well, so you will likely want to combine text to avoid
+duplication.}
+To obtain this piece of critical information, we
 propose a novel security metric to quantitatively measure and evaluate the kernel. Our metric will provide
 insights into the kernel and let us understand security features of the kernel in a better way. 
 

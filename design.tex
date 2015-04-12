@@ -1,6 +1,19 @@
 \section{A New Design for Building Secure Systems}
 \label{sec.design}
 
+\cappos{My thought: Section 2 argued we need to execute kernel code, including 
+some `risky' functionality to make programs work.  Section 3 argued that `risky'
+functionality is where vulnerabilities are likely to be.  Here we show how
+to have a design that allows `risky' functionality to execute without 
+causing a security problem.  Key idea: build a sandbox from safe functionality
+and reimplement risky functionality inside of it.  We say all of this, but
+some of it requires a careful read.}
+
+\cappos{It is good to make the threat model explicit, but I'm not sure here
+is the place to do it.  We've already been talking about zero-day kernel
+vulnerabilities.  It may make sense to locate the threat model earlier on.
+(Perhaps around section 2.)}
+
 Our goal is to build secure systems that can mitigate the problem of kernel exploitation effectively. 
 As we have discussed in the motivation section \S{2} before, one key reason that many previous work 
 failed to prevent kernel exploitation effectively is that there was not enough knowledge about 

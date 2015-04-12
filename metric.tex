@@ -102,7 +102,8 @@ we used a tool called Gcov \yiwen{cite: Gcov}, which is a component inside the L
 
 The next step is to evaluate security aspects of the kernel trace that we captured. Using the historical kernel vulnerability 
 reports, we built a list of severe kernel bugs. For each of the bugs we examined, we identified the lines of code 
-in the kernel that would trigger the bug. We determine that the lines of code in the kernel are \textit{risky} if they 
+in the kernel that would trigger the bug. \cappos{Need to make it clearer how
+we do this. } We determine that the lines of code in the kernel are \textit{risky} if they 
 may trigger certain kernel vulnerabilities. And those lines of code that cannot trigger kernel vulnerabilities are 
 considered to be \textit{safe}. This gives us a precise way to know which portions of the kernel are safe and which 
 portions of the kernel are risky. 
@@ -117,12 +118,16 @@ be trusted to build a secure trusted computing base for designs of secure system
 Our hypothesis is that commonly used kernel paths are likely to be safe and contain few bugs. 
 Here, ``commonly used kernel paths'' refers to the kernel paths executed by running popular and 
 daily-used applications, such as Web browser applications, file editor applications, and etc. 
-The logic behind our hypothesis is that commonly used kernel paths are used frequently, usually 
-on a daily basis, and therefore have been well examined and reinforced by the security community and
-the kernel development teams. In addition, commonly used kernel paths usually include 
-kernel functions that are used in a normal way rather than special corner cases, which means that the chances 
+The logic behind our hypothesis is that commonly used kernel paths are used
+frequently and therefore bugs and vulnerabilities would have most likely
+been caught by developers.  In addition, commonly used kernel paths usually 
+include kernel functions that are used in a normal way rather than special 
+corner cases, which means that the chances 
 to harbor kernel bugs in those commonly used kernel paths are slim. 
 
+\cappos{I feel it is a bit too much future tense here.  We did verify it.
+It is fine to say we have a hypothesis, and that we provide some initial
+results to confirm it.}
 If our hypothesis can be verified, then it would become a critical guideline to create new designs for secure systems 
 (shown in \S{4}). 
 But before going too far into the new designs, let us first verify that our hypothesis indeed holds, that 
@@ -132,7 +137,8 @@ commonly used kernel paths are likely to contain few bugs and be safe.
 Our hypothesis is that commonly used kernel paths contain few bugs. 
 So to verify our hypothesis, we first needed to obtain the commonly used kernel paths. 
 We generated the commonly used kernel paths by using and combining two approaches, 
-system call fuzzing, and running popular user applications. 
+system call fuzzing, and running popular user applications.  \cappos{I'm
+confused about how fuzzing fits in here.}
 
 User space applications interact with the kernel space essentially through the system call API. 
 So all those system calls are at the bottom level, while the applications sit at the top level. 
@@ -252,9 +258,16 @@ We then checked if those commonly used kernel paths contain few kernel bugs.
 We examined a list of 40 severe Linux kernel bugs from the last five years (shown in Table 1). 
 We used those 40 kernel bugs to check if there are vulnerabilities within the trace of commonly used kernel paths.
 The results of our experiment are shown in Table 3.  
+\cappos{I'm confused.  Does this mean that almost all bugs couldn't be
+triggered with the fuzzing tools?  If so, then the tools themselves seem
+like they are terrible or else we are doing something wrong.  Is there a
+better way to get code coverage / test coverage in the kernel?  Do they
+have tests we can use for this?}
 
 From the results, we can see that commonly used kernel paths contain only $2.5\%$ of the bugs we examined 
 from the last five years.  
-Our results have positive implication that commonly used kernel paths contain few bugs and are safe. 
+Our results have positive implication that commonly used kernel paths
+contain few bugs and are safe. \cappos{But does it?  If fuzzing only has
+2.5\% available also, then why is this true?}
 Our hypothesis and finding provide insights and guidelines for new designs of secure systems. We discuss details of 
 a new design in the next section, \S{4}. 

@@ -1,7 +1,12 @@
 \section{Introduction}
 \label{sec.introduction}
 
-Privileged code is an essential component of modern computer systems but 
+\cappos{I talk about hypervisors too here, in part because I feel they are a
+natural solution to the same problem.  I probably shouldn't because that makes
+our scope seem larger than what we can support w/ our results.}
+
+Privileged code \cappos{such as OS kernels and hypervisors} is an essential 
+component of modern computer systems but 
 presents a number of security challenges. The privileged code itself is vulnerable 
 to attacks and other parts of the system could be damaged when vulnerabilities in 
 that privileged code are exploited.
@@ -12,24 +17,40 @@ Decreasing the feasibility of exploitation of the kernel bugs, especially privil
 would be a substantial step toward stronger security for computer systems.
 
 Bugs in operating system kernels have motivated development of a diverse set of
-technologies to attempt to reduce these risks, such as OS virtualization, system
-call filtering, library OSes, etc. Unfortunately, these technologies also 
-harbor vulnerabilities that are also exploitable. Even with these technologies in place,
-applications from the user space could still have access to a portion of the kernel that might contain 
+technologies to attempt to reduce these risks, such as OS virtualization, 
+system call filtering, library OSes, etc. \cappos{However, there are two
+major problems with these systems.  First,}  Unfortunately, these technologies 
+also harbor vulnerabilities that are also exploitable. \cappos{Second,}
+Even with these technologies in place, applications from the user space 
+could still have access to a portion of the kernel that might contain 
 bugs and is risky to be exposed. 
 
 One contributing factor to security problems associated with these existing technologies and potential
 new designs is that it is still unknown which portions of the privileged code are
 safe to expose, and which portions would be vulnerable and exploitable. 
-One key missing puzzle is a standard method for quantifying the safety (or risky) levels of the privileged code. 
+One key missing puzzle is a standard method for quantifying the safety (or 
+risk) of the privileged code. 
 For example, is it a good practice to minimize \textit{the number of lines of code}?
-Is \textit{the number of API calls} a good metric for security? 
-To our best knowledge, there has yet to be quantitative metric to evaluate the privileged code and provide 
+Is \textit{the number of API calls} a good metric for security?  \cappos{cites
+for these would be good.}
+Is avoiding files that have historically had bugs a viable approach?
+\cappos{Need to refer to the sorts of sources mentioned in this paper: 
+``Does Bug Prediction Support Human Developers? Findings From a Google 
+Case Study".  This refers to fairly close related work in the SE
+community.  If mentioned here, it should be a sentence clause and a few
+citations.  Section 3 can say more.}
+To the best of our knowledge, there is no quantitative metric \cappos{that
+is considered an effective way} to evaluate the 
+security of privileged code \cappos{perhaps end the sentence here?  I feel
+the rest gets away from what we want to say.} and provide 
 insights into how to design a secure system that only interacts with the privileged code in a safe manner.
 
-In this paper, we propose a metric that quantitatively measures and evaluated the 
+In this paper, we propose a metric that quantitatively measures and evaluated 
+the \cappos{security of the Linux kernel versions X-Y}
 kernel code. The kernel trace profiling data is an important piece of information 
-obtained by using our metric. This data reveals the use pattern of the kernel code 
+obtained by using our metric. \cappos{I don't understand the previous sentence.
+I think it may be clearer if rephrased.}
+This data reveals the use pattern of the kernel code 
 based upon applications running from the user space. The use pattern can then be
 leveraged to design new systems that have to meet specific requirements, 
 such as strong security or high performance. To design and build secure systems, 
@@ -38,20 +59,25 @@ safe to be exposed. Results from using our metric indicate that this hypothesis 
 can be leveraged to create new design aiming at building secure systems. 
 
 To protect the kernel from being exploited, we came up with a new design 
+\cappos{do we want to name it here?  We should probably call it 
+`safely-reimplement' so we can refer to it later.}
 that aims at providing strong isolation between the kernel space and the user space, 
 and thus providing better protection to the kernel. Our new design leverages 
 our metric to make better design decisions and build more effective system. 
 Based upon our new design, we implemented a sandbox system, called Lind.
-Lind minimized the amount of risky privileged code that is executed.  
-Risky functionality is itself implemented inside a sandbox with
-a small trusted computing base (TCB). 
+Lind minimizes the amount of risky privileged code that is reachable by a
+sandboxed program.  To allow a program that uses risky functionality to
+execute correctly, risky functionality is reimplemented inside a sandbox with
+a small trusted computing base (TCB) \cappos{comprised of safe code}. 
 This additional level of sandboxing provides an outlet for risky functionality, without which
 legacy programs will not run, while containing security flaws in this code. 
 
 We evaluate Lind by comparing it against other similar systems 
 that are not designed using our metric. More specifically, we run user applications
 under Lind and other systems, and compare their kernel traces. In addition, we examined historical
-kernel bug reports to verify whose kernel trace is likely to trigger more kernel bugs
+kernel bug reports to verify whose kernel trace is likely to trigger more
+kernel bugs. \cappos{I'm confused.  Do we use fuzzing or real apps for
+this?}
 Evaluation results showed that running applications in Lind is least likely to trigger kernel bugs, 
 which indicates that designs, such as the prototype of Lind, which uses our metric, 
 tend to result in more secure systems. 
@@ -59,20 +85,29 @@ tend to result in more secure systems.
 The main contributions of this paper are as follows:
 
 \begin{itemize}
-\item We propose a novel metric for quantitatively measuring and evaluating the kernel. 
-Our metric examines the kernel trace generated by running user applications at the lines-of-code level.  
+\item We propose a novel metric for quantitatively measuring and evaluating 
+the security of privileged code, such as in a hypervisor or kernel. 
+Our metric examines the kernel trace generated by running popular user 
+applications and produces recommendations at the lines-of-code level.  
 
 \item Using our metric, we have findings that substantiated our key hypothesis that commonly used kernel paths 
-contain few bugs. 
+contain few bugs.  \cappos{I wonder if this should be phrased differently.
+Of course these results are things we found to be true.  If not, why would
+we write the paper?  Do you want to say that we validated this on Linux
+over certain versions of the kernel?}
 
-\item We created a novel secure design that came from examining and leveraging our metric and key hypothesis 
-that commonly used kernel paths contain few bugs. 
+\item We created a novel secure design paradigm `safely-reimplement' that 
+came from examining and leveraging our metric and key hypothesis 
+that commonly used kernel paths contain few bugs.  \cappos{Probably need a
+sentence to describe it here.}
 Using this new design, we implemented a sandbox we called Lind, which provides more secure environment
 for running applications and provide strong protection to the kernel. 
 
 \item Our evaluation results showed that implementation of our sandbox Lind did not trigger any of the 
 zero-day vulnerabilities we examined, 
-while systems built without using our metric have more chances to trigger vulnerabilities, which suggests 
+while systems built without using our metric have chances to trigger
+\cappos{What does this mean?  It sounds like we don't know.} 
+vulnerabilities, which suggests 
 that our metric can help design and build more secure systems effectively.
 \end{itemize}
 

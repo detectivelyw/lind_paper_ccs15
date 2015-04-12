@@ -1,20 +1,42 @@
 \section{Conclusion}
 \label{sec.conclusion}
 
-Isolating untrusted user applications from the underlying kernel is desirable, in order to protect the privileged code and 
-avoid the exploitation of bugs. However, there has yet to be a standard method that can shed lights on how to effectively
-isolate the user space applications from the kernel space without losing desired functionality.
+\cappos{I feel we will really need a limitations section.  It's clear there
+are a lot of things we could do to round out the work.  For example,
+using other OSes for analysis (Windows, etc.), testing hypervisors, etc.
+I do not know if it can be a subsection here, but it is worth being
+very direct about. }
 
-We propose a new metric that quantitatively measures and evaluates the kernel code being executed when running
-user applications. We have a key hypothesis that commonly used kernel paths contain few bugs. Using our metric, 
+\cappos{On a similar note, we likely also need to be very clear about the
+limitations / framing of the problem up front so the reader does not expect
+more than we provide.}
+
+Isolating untrusted user applications from the underlying kernel is
+desirable, in order to protect the privileged code and 
+avoid the exploitation of bugs. However, there has yet to be a standard
+method that can shed lights on how to effectively
+isolate the user space applications from the kernel space without losing
+desired functionality.
+
+We propose a new metric that quantitatively measures and evaluates the
+kernel code being executed when running
+user applications. We have a key hypothesis that commonly used kernel paths
+contain few bugs. Using our metric, 
 we have findings suggesting the hypothesis is reasonable and solid. 
 
-A new design for building secure systems was created based on the findings from our metric. 
-We implemented a sandbox system, called Lind, which is based upon the new design using our metric. 
-Our system Lind, securely reconstruct complex yet essential OS functionality inside a sandbox. 
-The sandbox itself is designed to have a minimized trusted computing base (TCB) and only interact with the kernel
+A new design for building secure systems was created based on the findings
+from our metric. 
+We implemented a sandbox system, called Lind, which is based upon the new
+design using our metric. 
+Our system Lind, securely reconstruct complex yet essential OS
+functionality inside a sandbox. 
+The sandbox itself is designed to have a minimized trusted computing base
+(TCB) and only interact with the kernel
 in a minimal and safe way. 
 
-Our evaluation results have shown that Lind is least likely to trigger historically reported kernel bugs, compared against
-other systems built without using our metric, such as VirtualBox and Graphene. The successful implementation of Lind
-suggests that new designs using our metric are likely to lead to more secure systems. 
+Our evaluation results have shown that Lind is least likely to trigger
+historically reported kernel bugs, compared against
+other systems built without using our metric, such as VirtualBox and
+Graphene. The successful implementation of Lind
+suggests that new designs using our metric are likely to lead to more
+secure systems. 
