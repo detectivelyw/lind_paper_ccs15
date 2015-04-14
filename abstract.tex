@@ -15,15 +15,16 @@ analysis, we devise a metric that allows us to predict which portions
 of the kernel are less likely to contain vulnerabilities.
 This metric is based upon whether lines of code in the kernel get 
 executed by popular programs.  Our analysis shows that commonly used kernel 
-paths contain fewer vulnerabilities.   
+paths contain fewer vulnerabilities.  \yanyan{than, eg, using uncommon paths.}
 
 This observation has significant implications for how secure systems
 should be designed.  As a result, we devised a novel ``safely-reimplement'' 
 design pattern for secure systems.  We implemented a prototype security 
-system Lind, that uses this design pattern.
+system Lind that uses this design pattern.\yanyan{use 1-2 sentences to 
+describe Lind?}
 %accesses only commonly used kernel paths, and have a very small trusted computing base that places only limited trust in the privileged code. 
 Our experimental results show that programs run in Lind can trigger many
-fewer vulnerabilities (X\%) versus existing systems like VirtualBox (XX\%),
+fewer vulnerabilities (X\%) compared to existing systems like VirtualBox (XX\%),
 Graphene (XX\%), and Bascule (XX\%).
 
 \end{abstract}
