@@ -1,25 +1,26 @@
 \begin{abstract}
 
 Securing privileged code (such as a kernel or hypervisor) is essential for
-computer security.  Yet despite substantial effort, privileged code 
+computer security.  Despite substantial effort, privileged code 
 still contains exploitable vulnerabilities.  This has led to techniques
 such as system call filtering, operating system virtualization, and library
-OSes to allow secure computation of legacy code.  Unfortunately, these
-techniques also exhibit exploitable vulnerabilities and do a poor job of 
-preventing an attacker from exploiting flaws in the
-underlying system.  
+OSes to allow secure computation of legacy code. \yanyan{why legacy 
+code, not new code too?} Unfortunately, these
+techniques also exhibit exploitable vulnerabilities and do not fully
+prevent attackers from exploiting flaws in the underlying system.  
 
-In this paper, we analyze why existing techniques fail 
-to protect the kernel effectively.  Moreover, to ground our
-analysis, we devise a metric that allows us to predict which portions
+In this paper, we analyze the reason existing techniques cannot
+effectively protect system kernel.  Moreover, 
+we devise a metric that allows us to predict which portions
 of the kernel are less likely to contain vulnerabilities.
 This metric is based upon whether lines of code in the kernel get 
 executed by popular programs.  Our analysis shows that commonly used kernel 
 paths contain fewer vulnerabilities.  \yanyan{than, eg, using uncommon paths.}
 
 This observation has significant implications for how secure systems
-should be designed.  As a result, we devised a novel ``safely-reimplement'' 
-design pattern for secure systems.  We implemented a prototype security 
+should be designed.  We therefore devised a novel ``safely-reimplement'' 
+design pattern for secure systems\yanyan{such that it uses common paths, etc}. 
+We implemented a prototype security 
 system Lind that uses this design pattern.\yanyan{use 1-2 sentences to 
 describe Lind?}
 %accesses only commonly used kernel paths, and have a very small trusted computing base that places only limited trust in the privileged code. 
