@@ -14,66 +14,72 @@ is the place to do it.  We've already been talking about zero-day kernel
 vulnerabilities.  It may make sense to locate the threat model earlier on.
 (Perhaps around section 2.)}
 
-Our goal is to build secure systems that can mitigate the problem of kernel exploitation effectively. 
-As we have discussed in the motivation section \S{2} before, one key reason that many previous work 
+Our goal is to build a secure system that can mitigate the problem of kernel exploitation effectively. 
+As we have discussed in Section~\ref{sec.motivation}, one key reason that many previous work 
 failed to prevent kernel exploitation effectively is that there was not enough knowledge about 
 which portions of the kernel can be safely exposed to the user applications. 
-And there was no standard method to acquire this knowledge. 
-The metric we introduced in \S{3} is devised to serve the purpose of having a standard method to 
+%And there was no standard method to acquire this knowledge. 
+The metric introduced in Section~\ref{sec.metric} is devised to serve the purpose of having a standard method to 
 obtain better understanding of the kernel, and to know which portions of the kernel can be safely exposed. 
-As we discussed in \S{3}, our findings suggest that commonly used kernel paths contain few bugs.
-We shall then use this important result to create a new design for building secure systems. 
+Our findings in Section~\ref{sec.metric} suggest that commonly used kernel paths contain few bugs.
+In this section, we use this important result to create a new design for building secure systems. 
 
 \subsection{Threat Model}
 In our threat model, threats refer to any behavior, either intentional or accidental, that may cause potential harm 
-to the system. Threats may be triggered by malicious code or bugs in non-malicious programs.
+to a system. Threats may be triggered by malicious code or bugs in non-malicious programs.
 
-In order to fully execute their functions, applications need to have access to a set of privileges provided by 
+%In order to fully execute their functions, 
+Applications need to have access to a set of privileges provided by 
 the operating system, usually exposed as system calls. The primary security goal of a secure system is to 
 restrict a program to some subset of privileges, usually by exposing a set of functions that mediate 
 access to the underlying operating system privileges. Threats occur when applications obtain access to 
 privileges that were not intentionally exposed by the system, thus escaping the protection 
-intended by the secure system \cite{Repy:10}.
+intended by the secure system~\cite{Repy:10}.
 
 To pose threats to a secure system, we assume that applications may use multiple threads to modify visible 
-state or issue concurrent requests which may trigger a race condition. Our goal is to prevent bugs in 
+state or issue concurrent requests to a system resource, which may trigger a race condition. Our goal is to prevent bugs in 
 the code from allowing an user program to escape the secure system to access the kernel code, and 
 possibly trigger kernel bugs.
 
 \subsection{Design of Architecture}
-To build secure systems, our design needs to effectively construct a safe environment in which user programs 
-can run without worrying about triggering kernel bugs and break the whole system. To achieve this security goal, 
+To build a secure system, our design needs to effectively construct a safe environment in which user programs 
+can run without worrying about triggering kernel bugs and break the whole system. 
+\yanyan{I don't quite understand the relation between these two sentences. Why does "user programs 
+can run without worrying about triggering kernel bugs" result in a "secure system placed in the user space"?}
+To achieve this security goal, 
 our secure system should be placed in the user space, and exist as a key layer between the user applications 
-and the underlying Operating System kernel. To complete the architecture of the system, there are three critical 
-questions that need to be answered. First of all, how should our system access the kernel? Secondly, what interface 
-should our system provide to the user programs? Finally, how to implement the inside of our system to make it work?
+and the underlying OS kernel. To complete the architecture of the system, there are the following three critical 
+questions that need to be answered. 
+%First of all, how should our system access the kernel? Secondly, what interface 
+%should our system provide to the user programs? Finally, how to implement the inside of our system to make it work?
 
-To begin with, the key question related with security is how should our system access the kernel. Since now we know 
+First of all, the key question related to security is how should our system access the kernel. Since now we know 
 that commonly used kernel paths contain few bugs, it would be desirable to design a system that only access the 
-commonly used kernel paths. Through our findings in \S{3}, we can see that commonly used kernel paths have relatively 
-small size. This is positive for our design, because it shows that it is possible to design a system with a very small 
+commonly used kernel paths. Through our findings in Section~\ref{sec.metric}, we can see that commonly used kernel paths have relatively 
+small size. This indicates that it is possible to design a system with a very small 
 trusted computing base. Thus, our design should only access fundamental system calls within commonly used kernel paths. 
+\yanyan{the next sentence seems to repeat the previous sentences.}
 This gives our design a very small trusted computing base that places only very limited trust in the kernel code. Therefore, 
 our design barely has the chance to trigger kernel bugs and cause serious security problems. 
 
-Next, what interface should our system provide to the user programs? Essentially, this represents the tradeoff between 
+Second, what interface should our system provide to the user programs? Essentially, this represents the tradeoff between 
 security and functionality. Our goal is to provide strong protection to our system, therefore, security is prioritized. We are willing 
-to sacrifice certain functionality if better security can be achieved. Thus, our design provides a POSIX API to user programs with 
+to sacrifice certain functionality if better security can be achieved. \yanyan{I can't understand the relation between functionality vs. security and POSIX API.}Thus, our design provides a POSIX API to user programs with 
 support of fundamental functions. In fact, a restricted POSIX API is good enough to support many popular applications, 
-and even some very complex legacy applications. 
+and even some very complex legacy applications. \yanyan{Use citations to back up?}
 
-Finally, how to implement the inside of our systems? 
-To provide a rich POSIX API to user programs, while accessing the kernel only in commonly used path requires our system to 
-reconstruct and reimplement many functions inside our system. Since the reimplementation itself is hard and may contain bugs 
-and raise security concerns, in our design, we require the reimplementation to be done inside a sandbox. Within a contained 
-environment, the reimplementation can construct the POSIX API effectively, without worrying about break other parts of the system.  
+Finally, how to implement our system? 
+To provide a rich POSIX API to user programs, \yanyan{Why it was restricted POSIX above, and rich POSIX here?}while accessing the kernel only in commonly used path requires our system to 
+reconstruct and reimplement many functions in our system. Since the reimplementation is difficult and may contain bugs 
+and raise security concerns, we require that the reimplementation done in a sandbox. In a contained 
+environment, the reimplementation can construct the POSIX API effectively, without breaking other parts of the system.  
 
-\subsection{Conclusion}
+\subsection{Summary}
 We have shown that using our finding that commonly used kernel paths contain few bugs as a key principle, a new design was created 
 for building secure systems. Our design accesses only commonly used kernel paths, placing very limited trust within the kernel code. 
-To provide sufficient functionality to user programs, our design safely reimplement fundamental functions inside a sandbox. Thus, many 
+To provide sufficient functionality to user programs, our design safely reimplements fundamental functions inside a sandbox. Thus, many 
 popular user applications and legacy programs can be supported by the POSIX API our system provides, while security will not be violated 
 with the isolation provided by the sandbox. 
 
-The design we described here doesn't rely on any specific technique or tool. To implement our design, it is possible to choose different techniques 
-that suit well with specific needs or requirements. In the next section (\S{5}), we describe one implementation we did using our design. 
+The design we described here does not rely on any specific technique or tool. To implement our design, it is possible to choose different techniques 
+that suit well with specific needs or requirements. In the next section, we describe one implementation of our design. 
