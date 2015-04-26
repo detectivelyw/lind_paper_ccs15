@@ -1,22 +1,158 @@
 \section{A Quantitative Metric and Our Key Hypothesis}
 \label{sec.metric}
 We devised a metric to quantitatively evaluate security aspects of the kernel. 
-It addresses a gap in that there is no standard method for properly evaluating 
-a system's security level. Thus, enabling fair comparison to be made of different security tools. 
-A critical question we investigated, using our metric is: which portions of the kernel are safe and 
-contain few bugs? Our framing hypothesis is that \textbf{\textit{commonly used kernel paths}} contain few bugs. 
-Our experimental results show that only $2.5\%$ of the historical kernel bugs that we examined were 
-found in commonly used kernel paths. Based on this work, we created a new design, so that it 
-places only limited trust within the commonly used kernel paths (in \S{4}). Using this new design, we built a prototype 
--- Lind -- as an example of how to use our metric to design and implement secure systems (in \S{5}). 
+%It addresses a gap in that there is no standard method for properly evaluating 
+%a system's security level. Thus, 
+It enables a fair comparison of different security tools. 
+We use our metric to investigate a critical question: which portions of the kernel are safe and 
+contain few bugs? Our hypothesis is that \textbf{\textit{commonly used kernel paths}} contain few bugs. 
+Our experimental results show that only $2.5\%$ of historical kernel bugs that we examined were 
+found in commonly used kernel paths. Based on this measurement, we created a new design that 
+places limited trust in commonly used kernel paths (in \S{4}). Using this new design, we built a prototype 
+Lind, as an example of how to use our metric to design and implement secure systems (in \S{5}). 
 
-\begin{table*}[!ht]
-\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} lc}
-\toprule
-\multicolumn{3}{c}{Linux Kernel Bugs Examined} \\
-\midrule
-Vulnerability    &  Specific Type \\
-\midrule
+\subsection{Rationale Behind Our Metric}
+As discussed previously (\S{2}), %a key reason that existing techniques 
+%fail to provide strong protection to the kernel is that there has yet to be a good way 
+%or standard method to understand which portions of the kernel are safe 
+%and which portions of the kernel are risky. 
+we need to gain more knowledge about how the kernel should be exposed to user applications, 
+and how to protect the interactions between the kernel space and 
+the user space without drastic changes to the current kernel structure. 
+Therefore, a metric to help understand this problem is desirable. 
+%and could have huge practical impact. 
+%
+%In addition to having a standard method for measuring and evaluating the kernel, 
+Additionally, such a metric would be a solid basis for comparison between different tools that try to 
+provide secure environment for running programs. 
+Currently, researchers and developers did not have a good way to evaluate the security features 
+of their tools. 
+%let along conduct comparison between different tools. However, to achieve the 
+%goal of building and deploying secure systems, it would be very helpful if we could conduct fair and accurate 
+%comparison between different tools. 
+Our metric provides a quantitative way to 
+facilitate such comparison. An example of comparison of evaluating security features among different tools is 
+demonstrated in our evaluation (\S{6}).
+
+\subsection{How Does the Metric Work?}
+To evaluate security aspects of the kernel using our metric, there are two key steps. First, 
+\textbf{\textit{the kernel trace}} of which lines of code in the kernel get executed is captured. 
+Second, this kernel trace is checked against the historical kernel bugs to see if it contains kernel vulnerabilities. 
+
+The first step is to capture the lines of kernel code get executed. 
+The OS kernel code is organized under different kernel paths and directories. 
+Whenever an application tries to access system resources, such as I/O, memory, and CPU, the kernel code 
+under corresponding paths is executed. Therefore, the kernel code execution 
+%can be viewed as the fundamental activities of the kernel, and it 
+reflects the basic behavior of the kernel. \yanyan{behavior of kernel or application?}
+Thus, %it makes sense to measure and analyze which lines of code get executed in the kernel. 
+our metric %adopts this fundamental approach. It 
+first captures which lines of code in the kernel get executed \yanyan{explain what a task program is?}
+when running a certain task program, which we call a \textit{kernel trace}. The kernel trace closely
+relates to the set of task programs that generated the trace. Therefore, conducting comparison between 
+different tools and environments \yanyan{"tools and environments" is confusing. Do you mean 
+applications? security tools?}
+becomes possible by using the kernel traces. To capture the kernel trace, 
+we use Gcov~\cite{gcov}, a component of the Linux kernel.
+\yanyan{Is it part of Linux kernel? It is "a standard utility with the GNU Compiler Collection (GCC) suite"
+according to wikipedia http://en.wikipedia.org/wiki/Gcov}
+
+The second step is to evaluate security aspects of the kernel trace that we captured. Using the historical kernel vulnerability 
+reports, we collect a list of severe kernel bugs. \yanyan{mention the source of bugs?}
+For each of the bugs, we identify the lines of code 
+in the kernel that would trigger the bug. \cappos{Need to make it clearer how
+we do this. } We determine that the lines of code in the kernel are \textit{risky} if they 
+may trigger certain kernel vulnerabilities, and those lines of code that cannot trigger kernel vulnerabilities are 
+considered to be \textit{safe}. This provides us knowledge about the safety of the kernel portions.
+%portions of the kernel are risky. 
+
+\subsection{Key Hypothesis: Commonly Used Kernel Paths Contain Few Bugs}
+%Now, to address the problem that motivated our metric from the very beginning, which portions of the kernel 
+%are safe and which portions of the kernel are risky. We can use our metric to answer this question. To be more
+%specific, 
+In this section, we use our metric to get an idea of which lines of code in the kernel contain few bugs, and empirically label 
+them as \textit{safe lines}. The safe lines of code would then compose the safe portions of the kernel, which can 
+be trusted to build a secure trusted computing base for secure systems (\S{4}). 
+
+Our hypothesis is that commonly used kernel paths are likely to be safe and contain few bugs. 
+Here, ``commonly used kernel paths'' refers to the kernel paths executed by running popular 
+applications, such as Web browsers, file editors, etc. 
+The logic behind our hypothesis is that commonly used kernel paths are used
+frequently and therefore bugs and vulnerabilities would have most likely
+been caught by developers.  In addition, commonly used kernel paths usually 
+include kernel functions that are used in a normal way rather than special 
+corner cases. This means that the chances 
+to harbor kernel bugs in those commonly used kernel paths are slim. 
+
+\cappos{I feel it is a bit too much future tense here.  We did verify it.
+It is fine to say we have a hypothesis, and that we provide some initial
+results to confirm it.}
+If our hypothesis can be verified, then it would become a critical guideline to create new designs for secure systems 
+(shown in \S{4}). 
+But before going too far into the new designs, let us first verify that our hypothesis indeed holds, that 
+commonly used kernel paths are likely to contain few bugs and be safe. 
+\yanyan{I feel this paragraph can be cut.}
+
+\subsection{Verification of the Key Hypothesis}
+So to verify our hypothesis that commonly used kernel paths contain few bugs, we 
+first needed to obtain the commonly used kernel paths. 
+We generated the commonly used kernel paths by using and combining two approaches, 
+system call fuzzing and running popular user applications.  \cappos{I'm
+confused about how fuzzing fits in here.}
+
+User space applications interact with the kernel space essentially through the system call API. 
+%So all those system calls are at the bottom level, while the applications sit at the top level. 
+It makes sense then to obtain the kernel trace from both of those two different levels. 
+We used two different approaches to obtain the kernel trace of commonly used kernel paths. 
+Experiments of both approaches were conducted using the native Linux environment.
+
+\textbf{1) the bottom-up approach: system call fuzzing.}
+Our system call fuzzing runs system calls exhaustively with all possible 
+arguments and options. We conducted system call fuzzing over more than 300 available system calls, 
+\yanyan{such as call xyz.}which gave us a thorough kernel trace. 
+
+\textbf{2) the top-down approach: running popular user applications.} 
+We ran applications that are commonly used by many users on a daily basis, such as a Web browser, 
+file editor, and so on.  
+
+\begin{table}%[ht]
+\centering
+\scriptsize
+\begin{tabular}{|l|c|}
+  \hline
+  \textbf{Approach} & \textbf{Kernel Coverage (percentage)} \\
+  \hline \hline
+  System Call Fuzzing & 23\% \\
+  \hline
+  User Applications & 19\% \\
+  \hline
+\end{tabular}
+\caption {Kernel Coverage}
+\label{table:kernel_coverage}
+\end{table}
+
+\begin{figure}%[h]
+\centering
+\includegraphics[width=1.0\columnwidth]{diagram/lind_ccs15_diagram_01.pdf}
+\caption{Kernel Trace Comparison: Two Approaches\yanyan{may put \% numbers beside two bars, 
+also remove the caption in the figure.}}
+\label{fig:two_approaches_trace}
+\end{figure}
+
+\begin{figure}%[h]
+\centering
+\includegraphics[width=1.0\columnwidth]{diagram/lind_ccs15_diagram_02.pdf}
+\caption{Kernel Trace in Key Paths}
+\label{fig:key_paths_trace}
+\end{figure}
+
+\begin{table}[!ht]
+\scriptsize
+\begin{tabular}{|l|l|}
+\hline
+%\multicolumn{2}{|c|}{\bf Linux Kernel Bugs Examined} \\\hline
+\textbf{Vulnerability}    &  \textbf{Specific Type} \\\hline
+
  CVE-2014-9529 \cite{CVE:20149529} & concurrency, race condition \\
  CVE-2014-3631 \cite{CVE:20143631} & NULL pointer dereference \\
  CVE-2012-6657 \cite{CVE:20126657} & network socket variable mischeck \\
@@ -50,149 +186,27 @@ Vulnerability    &  Specific Type \\
  CVE-2012-0207 \cite{CVE:20120207} & divide-by-zero error and panic \\
  CVE-2011-2525 \cite{CVE:20112525} & NULL pointer dereference \\
  CVE-2011-1076 \cite{CVE:20111076} & NULL pointer dereference \\
- CVE-2011-2184 \cite{CVE:20112184} & NULL pointer dereference, none Initialization \\
+ CVE-2011-2184 \cite{CVE:20112184} & NULL pointer dereference, none initialization\\
  CVE-2010-2478 \cite{CVE:20102478} & integer overflow \\
  CVE-2010-2960 \cite{CVE:20102960} & NULL pointer dereference  \\
  CVE-2010-2492 \cite{CVE:20102492} & privilege escalation, buffer overflow \\
  CVE-2010-2240 \cite{CVE:20102240} & stack overflow \\
  CVE-2010-1188 \cite{CVE:20101188} & use-after-free \\
  CVE-2010-0437 \cite{CVE:20100437} & NULL pointer dereference \\
-\bottomrule
-\end{tabular*}
+\hline
+\end{tabular}
 \caption {Linux Kernel Bugs Examined}
 \label{table:kernel_bugs}
-\end{table*}
-
-\subsection{Rationale Behind Our Metric}
-As discussed previously (in \S{2}), a key reason that existing techniques 
-fail to provide strong protection to the kernel is that there has yet to be a good way 
-or standard method to understand which portions of the kernel are safe 
-and which portions of the kernel are risky. We need to gain more knowledge to answer 
-this question to properly decide how should the kernel be exposed to user applications, 
-and what could be a good way to protect interactions between the kernel space and 
-the user space, without drastic change to the current kernel structure. 
-Thus, a metric to help solve this problem is desirable and could have huge practical impact. 
-
-In addition to having a standard method for measuring and evaluating the kernel, 
-our metric would also become a solid basis to conduct comparison between different tools that try to 
-provide secure environment for running programs. 
-Surprisingly, researchers and developers did not have a good way to evaluate the security features 
-of their tools, let along conduct comparison between different tools. However, to achieve the 
-goal of building and deploying secure systems, it would be very helpful if we could conduct fair and accurate 
-comparison between different tools. Our metric provides a quantitative way to 
-facilitate such comparison. An example of doing comparison for evaluating security features between different tools is 
-demonstrated in our evaluation section (in \S{6}).
-
-\subsection{How Does the Metric Work?}
-To evaluate security aspects of the kernel using our metric, there are two key steps. First, 
-\textbf{\textit{the kernel trace}} of which lines of code in the kernel get executed needs to be captured. 
-Secondly, the kernel trace is checked against the historical kernel bugs to see if it contains kernel vulnerabilities. 
-
-The first step in using our metric is to capture the lines of kernel code get executed. 
-The Operating System kernel source code is organized under different kernel paths and folders. 
-Whenever system resources, such as I/O, memory, and CPU, need to be accessed, the kernel code 
-under corresponding paths will be executed to perform necessary functions. Therefore, the kernel code 
-execution can be viewed as the fundamental activities of the kernel, and it reflects the basic behavior of 
-the kernel. Thus, it makes sense to measure and analyze which lines of code get executed in the kernel. 
-Our metric adopts this fundamental approach. It first captures which lines of code in the kernel get executed 
-when running certain task programs, which we called the kernel trace. The kernel trace closely
-ties with the set of task programs that generated the trace. Therefore, conducting comparison between 
-different tools and environments becomes possible by using the kernel traces. To capture the kernel trace, 
-we used a tool called Gcov \yiwen{cite: Gcov}, which is a component inside the Linux kernel.
-
-The next step is to evaluate security aspects of the kernel trace that we captured. Using the historical kernel vulnerability 
-reports, we built a list of severe kernel bugs. For each of the bugs we examined, we identified the lines of code 
-in the kernel that would trigger the bug. \cappos{Need to make it clearer how
-we do this. } We determine that the lines of code in the kernel are \textit{risky} if they 
-may trigger certain kernel vulnerabilities. And those lines of code that cannot trigger kernel vulnerabilities are 
-considered to be \textit{safe}. This gives us a precise way to know which portions of the kernel are safe and which 
-portions of the kernel are risky. 
-
-\subsection{Key Hypothesis: Commonly Used Kernel Paths Contain Few Bugs}
-Now, to address the problem that motivated our metric from the very beginning, which portions of the kernel 
-are safe and which portions of the kernel are risky. We can use our metric to answer this question. To be more
-specific, we use our metric to get an idea of which lines of code in the kernel contain few bugs, then label 
-those lines as safe lines. The safe lines of code would then compose the safe portions of the kernel, which can 
-be trusted to build a secure trusted computing base for designs of secure systems (shown in \S{4}). 
-
-Our hypothesis is that commonly used kernel paths are likely to be safe and contain few bugs. 
-Here, ``commonly used kernel paths'' refers to the kernel paths executed by running popular and 
-daily-used applications, such as Web browser applications, file editor applications, and etc. 
-The logic behind our hypothesis is that commonly used kernel paths are used
-frequently and therefore bugs and vulnerabilities would have most likely
-been caught by developers.  In addition, commonly used kernel paths usually 
-include kernel functions that are used in a normal way rather than special 
-corner cases, which means that the chances 
-to harbor kernel bugs in those commonly used kernel paths are slim. 
-
-\cappos{I feel it is a bit too much future tense here.  We did verify it.
-It is fine to say we have a hypothesis, and that we provide some initial
-results to confirm it.}
-If our hypothesis can be verified, then it would become a critical guideline to create new designs for secure systems 
-(shown in \S{4}). 
-But before going too far into the new designs, let us first verify that our hypothesis indeed holds, that 
-commonly used kernel paths are likely to contain few bugs and be safe. 
-
-\subsection{Verification of the Key Hypothesis}
-Our hypothesis is that commonly used kernel paths contain few bugs. 
-So to verify our hypothesis, we first needed to obtain the commonly used kernel paths. 
-We generated the commonly used kernel paths by using and combining two approaches, 
-system call fuzzing, and running popular user applications.  \cappos{I'm
-confused about how fuzzing fits in here.}
-
-User space applications interact with the kernel space essentially through the system call API. 
-So all those system calls are at the bottom level, while the applications sit at the top level. 
-It makes sense then to obtain the kernel trace from both of those two different levels. 
-We used two different approaches to obtain the kernel trace of commonly used kernel paths. 
-Experiments of both approaches were conducted using the Native Linux environment.
-
-\textbf{1) the bottom-up approach: system call fuzzing.}
-Our system call fuzzing is basically running system calls exhaustively with all possible 
-arguments and options. We conducted system call fuzzing over more than 300 available system calls, 
-which gave us a thorough kernel trace. 
-
-\textbf{2) the top-down approach: running popular user applications.} 
-We ran applications that are commonly used by many users on a daily basis, such as Web browser application
-and file editor application.  
-
-\begin{table}[ht]
-\centering
-\begin{tabular}{|l|c|}
-  \hline
-  Approach & Kernel Coverage (percentage) \\
-  \hline \hline
-  System Call Fuzzing & 23\% \\
-  \hline
-  User Applications & 19\% \\
-  \hline
-\end{tabular}
-\caption {Kernel Coverage}
-\label{table:kernel_coverage}
 \end{table}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=1.0\columnwidth]{diagram/lind_ccs15_diagram_01.pdf}
-\caption{Kernel Trace Comparison: Two Approaches}
-\label{fig:two_approaches_trace}
-\end{figure}
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=1.0\columnwidth]{diagram/lind_ccs15_diagram_02.pdf}
-\caption{Kernel Trace in Key Paths}
-\label{fig:key_paths_trace}
-\end{figure}
-
-\begin{table*}[!ht]
-\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} cc}
-\toprule
-\multicolumn{3}{c}{Vulnerabilities in Commonly Used Kernel Paths} \\
-\midrule
-& \multicolumn{2}{c}{Commonly Used Kernel Paths} \\
+\begin{table}[!ht]
+\scriptsize
+\begin{tabular}{|l|c|c|}\hline
+%\multicolumn{3}{c}{Vulnerabilities in Commonly Used Kernel Paths} \\\hline
+\multirow{2}{*}{\textbf{Vulnerability}} & \multicolumn{2}{c|}{\bf Commonly Used Kernel Paths} \\
 \cline{2-3}
-Vulnerability    &  System Call Fuzzing Paths &  User Application Paths \\
-\midrule
+&  \textbf{System Call Fuzzing} &  \textbf{User Application} \\ \hline
+
  CVE-2014-9529 \cite{CVE:20149529} & \ding{55} & \ding{55} \\
  CVE-2014-3631 \cite{CVE:20143631} & \ding{55} & \ding{55} \\
  CVE-2012-6657 \cite{CVE:20126657} & \ding{55} & \ding{55} \\
@@ -232,32 +246,34 @@ Vulnerability    &  System Call Fuzzing Paths &  User Application Paths \\
  CVE-2010-2492 \cite{CVE:20102492} & \ding{55} & \ding{55} \\
  CVE-2010-2240 \cite{CVE:20102240} & {\color{red}\ding{51}} & {\color{red}\ding{51}}\\
  CVE-2010-1188 \cite{CVE:20101188} & \ding{55} & \ding{55} \\
- CVE-2010-0437 \cite{CVE:20100437} & \ding{55} & \ding{55} \\ 
-\bottomrule
-\end{tabular*}
+ CVE-2010-0437 \cite{CVE:20100437} & \ding{55} & \ding{55} \\ \hline
+\end{tabular}
 \caption {Vulnerabilities in Commonly Used Kernel Paths 
-({\color{red}\ding{51}}: vulnerability in paths; \ding{55}: vulnerability not in paths)}
+({\color{red}\ding{51}}: vulnerability in paths; \ding{55}: vulnerability not in paths)
+\yanyan{Table~\ref{table:kernel_bugs} and \ref{table:vulnerabilities_commonly_used_kernel_paths} 
+can be merged into one.}}
 \label{table:vulnerabilities_commonly_used_kernel_paths}
-\end{table*}
+\end{table}
 
-Using the two approaches we just described, we obtained the trace of commonly used kernel paths.
-The kernel trace coverage of the two approaches are as shown in Table 2. 
-A further breakdown of the composition of the kernel trace is illustrated in Figure 1 and Figure 2.
+Using these two approaches, we obtained the trace of commonly used kernel paths.
+The kernel trace coverage of the two approaches are as shown in Table~\ref{table:kernel_coverage}. 
+A further breakdown of the composition of the kernel trace is illustrated in Figure~\ref{fig:two_approaches_trace} and Figure~\ref{fig:key_paths_trace}.
 
-The results from Table 2 show that the size of commonly used kernel paths is not very large, only about $20\%$ 
-of the entire kernel code base. This is a positive sign that shows that commonly used kernel paths are likely to contain 
+The results from Table~\ref{table:kernel_coverage} show that the size of commonly used kernel paths is not very large, only about $20\%$ 
+of the entire kernel code base. This shows that commonly used kernel paths are likely to contain 
 few bugs, since the coverage of the commonly used kernel paths is small and leaves little space for vulnerabilities to exist. 
+\yanyan{The small portion does not directly relate to contain few bugs.}
 
-The results from Figure 1 and Figure 2 show that for the two different approaches we used, most of the kernel trace was shared 
+The results from Figure~\ref{fig:two_approaches_trace} and Figure~\ref{fig:key_paths_trace} show that for the two different approaches we used, most of the kernel trace was shared 
 and under common paths. 
-(Shown by the ``OverlappedPaths'' from Figure 1 and ``OverlappedLines'' from Figure 2.) 
+(Shown by the ``OverlappedPaths'' in Figure~\ref{fig:two_approaches_trace} and ``OverlappedLines'' in Figure~\ref{fig:key_paths_trace}.) \yanyan{may quote from the figs what \% are common.}
 This shows that the kernel trace we generated was indeed commonly used, 
-so our method to obtain commonly used kernel paths is reasonable. 
+and our method to obtain commonly used kernel paths is reasonable. 
 
 We then checked if those commonly used kernel paths contain few kernel bugs.
-We examined a list of 40 severe Linux kernel bugs from the last five years (shown in Table 1). 
+We examined a list of 40 severe Linux kernel bugs from the last five years (shown in Table~\ref{table:kernel_bugs}). 
 We used those 40 kernel bugs to check if there are vulnerabilities within the trace of commonly used kernel paths.
-The results of our experiment are shown in Table 3.  
+The results of our experiment are shown in Table~\ref{table:vulnerabilities_commonly_used_kernel_paths}.  
 \cappos{I'm confused.  Does this mean that almost all bugs couldn't be
 triggered with the fuzzing tools?  If so, then the tools themselves seem
 like they are terrible or else we are doing something wrong.  Is there a
@@ -266,8 +282,8 @@ have tests we can use for this?}
 
 From the results, we can see that commonly used kernel paths contain only $2.5\%$ of the bugs we examined 
 from the last five years.  
-Our results have positive implication that commonly used kernel paths
+Our results imply that commonly used kernel paths
 contain few bugs and are safe. \cappos{But does it?  If fuzzing only has
 2.5\% available also, then why is this true?}
 Our hypothesis and finding provide insights and guidelines for new designs of secure systems. We discuss details of 
-a new design in the next section, \S{4}. 
+a new design in the next section. 
