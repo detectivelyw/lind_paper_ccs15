@@ -1,33 +1,39 @@
 \section{Motivation}
 \label{sec.motivation}
 
-The Operating System (OS) kernel is a critical component of the entire computing system, 
-yet is not protected properly and very vulnerable under the current security model of existing 
+The Operating System (OS) kernel is a critical component of the entire computing system. 
+However, it is not protected properly and is vulnerable under the current security model of existing 
 computing systems.
 
-The kernel has to provide an interface to serve the requests from user applications for acquiring 
-essential system resources, such as memory, I/O, CPU, and etc. 
+The kernel has to provide an interface to serve the requests from applications for acquiring 
+essential system resources, such as memory, I/O, and CPU. 
 All applications running in the system depend on the kernel to provide 
 essential functionality.   \cappos{Thus all code, even that which is 
 sandboxed or untrusted, will make calls that are eventually processed by the
 kernel.}
-
+%
 However, the OS kernel is privileged code that needs to be well protected. Access to the
-kernel code should be avoided as much as possible and be conducted in a very careful manner 
-whenever contact is necessary. Failing to do this would lead to potential exploitation of kernel bugs and 
+kernel code should be avoided as much as possible and be conducted in a careful manner. 
+%whenever contact is necessary. 
+Failing to do this would lead to potential exploitation of kernel bugs and 
 may lead to serious damage to the entire computing system.  
 
 \cappos{There is a shift in focus here.  We need to signal this somehow.}
-The OS kernel has always been an appealing target. During the past few years, 
-the exploitation of OS kernels has become a very serious problem that remains to be solved, 
-in spite of large amount of efforts devoted by researchers and practitioners. 
+Not well-protected kernels have rendered themselves the target of attackers. During the past few years, 
+the exploitation of OS kernels has been wide spead, 
+despite the amount of efforts by researchers and practitioners. 
 There were 125 reported vulnerabilities of the Linux kernel, and 215 reported vulnerabilities 
-of all kinds of kernels in 2014 \cite{NVD:14}. Admittedly, the exploitation of user-level software 
+of all types of kernels in 2014~\cite{NVD:14}. Admittedly, the exploitation of user-level software 
 has become much harder, as recent versions of popular OSes come with numerous protections 
 and exploit mitigations. The principle of least privilege is better enforced in user accounts 
 and system services, compilers offer more protections against common software flaws, 
 and highly targeted applications, such as browsers and document viewers, have started to 
-employ sandboxing technique. On the other hand, the kernel has a huge codebase and 
+employ sandboxing technique. 
+\yanyan{The two sentences above and one below can be shortened as: Althought the 
+exploitation of user- level software has become much harder, the kernel has a huge 
+codebase and an attack surface that keeps increasing... Long sentences can get readers 
+distracted. Good writings use short but powerful sentences.}
+On the other hand, the kernel has a huge codebase and 
 an attack surface that keeps increasing due to the constant addition of 
 new features \cite{Metrics:13}. Indicatively, the size of the Linux kernel in terms of lines of code 
 has more than doubled, from 6.6 MLOC in v2.6.11 to 16.9 MLOC in v3.10 \cite{Linux:13}.
@@ -44,34 +50,43 @@ integer overflows \cite{CVE:20050736, CVE:20102959}, race conditions
 \cite{CVE:20091527, CVE:20093547}, as well as missing authorization checks and 
 poor argument sanitization vulnerabilities 
 \cite{CVE:20103904, CVE:20104347, CVE:20120946, CVE:20130268}. 
+\yanyan{Listing all the names of bugs is unnecessary, 2-3 is enough.}
 The exploitation of these bugs is particularly effective, 
 despite the existence of kernel protection mechanisms, 
 due to the weak separation between user and kernel space.
 \cappos{What point are you trying to make with the last bit here?}
 
 To build a secure computing system, it is critical to provide sufficient protection for the kernel and 
-prevent kernel exploitation from happening. Many previous attempts, including OS virtualization, 
+prevent kernel exploitation. Many previous attempts, including OS virtualization, 
 system call filtering, library OSes and etc. have tried to address this problem. However, 
 kernel exploitation still exist, and the problem has not been solved 
 effectively \cappos{This is a long sentence.  You may want to break it up.  }
 \cappos{You also would be making a stronger point if you could support the claim
 by showing flaws in those types of systems.}, which leads to a 
-fundamental question, why is it not working and what are we missing? After thinking about this
+fundamental question, why is it not working and what are we missing? 
+\yanyan{The sentences above read familiar? (compared to what have been said in the 
+previous two paragraphs)}
+After thinking about this
 question and examining previous work, we find that one key missing puzzle is that people do not know 
-clearly which part of the kernel are safe and can be exposed without potential dangers. Many previous
+clearly which part of the kernel are safe and can be exposed without potential dangers. 
+\yanyan{It will feel much stronger of we say "Our experience shows that OS developers (or some 
+other related people), do not know clearly...."}
+Many previous
 work, such as building a sandbox and using library OSes focused on isolating user programs. While isolation 
 can be useful and help mitigate the problem, the proposed systems still get access to the kernel. 
 And the key is: the way they access the kernel has no difference than before, because they do not 
-know what's the best way to leverage the kernel securely. So, essentially, what they are doing is just moving 
+know what's the best way to leverage the kernel securely. Essentially, these approaches move
 the attack surface from the previous place (between the user space and the kernel) to another place 
 (between the new proposed system and the kernel). The attack surface
 doesn't necessarily shrink.  \cappos{Is `shrinking' really the right thing
-to consider?  I think we will argue against LOC as the metric.}
+to consider?  I think we will argue against LOC as the metric.} 
+\yanyan{The attack surface is not necessarily reduced? Note: spell out doesn't as does not.}
 Therefore, the proposed solutions were not effective. 
 
 It would be more effective, if we can actually shrink the attack surface and have better control over 
 the interface exposed by the kernel. In another word, we need to be crystal clear about which portions of 
 the kernel are safe and which portions of the kernel are risky.
+\yanyan{Crystal clear is colloquial, try to avoid in formal writing.}
 \cappos{The previous sentence is a key point.  We need to draw it out and
 justify it more.}  
 \cappos{The text that follows feels like bridge text into the next section.
@@ -90,3 +105,4 @@ that provide stronger protection to the kernel. Ideally, we would like to only e
 of the kernel to the user space. Realistically, in some cases, even if we have to expose certain risky portion 
 of the kernel, we know clearly about the potential dangers and therefore can come up with better 
 strategies to mitigate the potential damage. 
+\yanyan{Without saying what this metric is, this paragraph reads a bit moot.}
