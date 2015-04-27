@@ -1,12 +1,12 @@
 \section{Implementation}
 \label{sec.implementation}
 
-Based on the new design we introduced in \S{4}, we implement a secure system, called Lind, as 
-as test and verification for our new design and the metric we used behind the design. We discuss 
+Based on the design introduced in Section~\ref{sec.design}, we implement a secure system, Lind, as 
+a verification for our new design and the metric we used behind the design. We describe the 
 implementation details of our system Lind in this section. 
 
 \subsection{Two Basic Techniques: Google's Native Client and Repy Sandbox}
-In the implementation of Lind, we leveraged two existing technologies, Google's Native Client, 
+In Lind, we leveraged two existing technologies: Google's Native Client, 
 and Repy sandbox. We now give a brief introduction to those two technologies.
 \cappos{Perhaps briefly state our reason for selecting each before explaining 
 their details.}
@@ -23,15 +23,15 @@ in the form of x86 and ARM binaries that are built with a lightly modified compi
 
 Repy is a restricted subset of Python \cite{Repy:10}, which is a sandbox that 
 provides safe environment for running applications.
-
+%
 In Lind, we use Repy to safely re-implement a subset of the POSIX API, which provides 
 fundamental operating system access to many applications. The POSIX API, which itself is difficult to secure, 
-is constructed using the Seattle's Repy sandbox which provides performance isolation and safety. 
+is constructed using the Repy sandbox which provides performance isolation and safety. 
 
-It should be noted that those two techniques, Google's Native Client and Repy Sandbox, are not required
+It should be noted that those two techniques, Google's Native Client and Repy sandbox, are not required
 our new secure design. It is possible to use other similar techniques to implement the prototype of Lind. 
 In our current implementation, we adopted those two techniques because they are popular and reliable 
-resources, that we believe are suitable for our needs. 
+resources that we believe are suitable for our needs. 
 
 \subsection{Architecture of Lind}
 The primary goal of Lind is to execute untrusted applications in a secure way and mitigate the problem of kernel exploitation. 
@@ -45,7 +45,8 @@ way that can reduce potential overhead. We leverage Google's Native Client (NaCl
 this second goal of efficiency.  
 
 Combining both NaCl and Repy sandbox, we have formed our dual-layer sandbox architecture 
-design of Lind. (Shown in Figure 3.)  
+design of Lind, as shown in Figure~\ref{fig:architecture}. \yanyan{From reading above, it's not
+clear why the architecture is like that in the figure, eg, how NaCl and Repy are placed.}
 
 \begin{figure}[h]
 \centering
@@ -55,14 +56,14 @@ design of Lind. (Shown in Figure 3.)
 \end{figure}
 
 \subsection{Implementation Details}
-Here we discuss some further implementation details about our system Lind. 
+Here we discuss some further implementation details about Lind. 
 The discussion focuses mainly on the connection between the two techniques we used, 
-Google's Native Client and Repy Sandbox. 
+Google's Native Client and Repy sandbox. 
 
 To provide native computation and safe access to the system, Lind combines NaCl and Repy. 
-Untrusted programs are run in NaCl, but access to all system resources is diverted to our Repy program. 
-This program is responsible for accessing the system on behalf of the program, it is called the Lind Library OS. 
-Our NaCl sandbox is built on top of our Repy sandbox. To service a system call in NaCl, a server routine 
+Untrusted programs are run in NaCl, but access to all system resources is diverted to a Repy program. 
+This program is responsible for accessing the system on behalf of the program, which is called the Lind Library OS. 
+A NaCl sandbox is built on top of the Repy sandbox. To service a system call in NaCl, a server routine 
 marshals its arguments into a text string, and sends the call and the arguments to Repy sandbox. 
 The Library OS then executes the appropriate system call, marshals the result and returns it back to NaCl. 
 The result is eventually returned as the appropriate native type to the calling program. 
@@ -71,10 +72,11 @@ Lind is designed to minimize its footprint within the trusted code base (TCB) of
 To achieve that, most of the Lind code is run from within the two sandboxes, the modifications to 
 the sandboxes themselves (and therefore the TCB) was extremely small. 
 
-The dual-layer sandbox mechanism completes the achievement of the isolation design goals through 
-two features. First, the dual-layer sandbox ensures that all code can modify only device state, 
+The dual-layer sandbox mechanism achieves isolation through 
+two features. First, the dual-layer sandbox ensures that all code can modify only device state, \yanyan{what 
+is a device? Is it the same as the computing system mentioned earlier?}
 interact with devices, or interact with the outside world through the new trusted operating system interface. 
-Secondly, the customizability of the interface ensures that the system can only modify state, interact with 
+Second, the customizability of the interface ensures that the system can only modify state, interact with 
 devices, or interact with the world at a rate and in a manner specified for the application. For example, 
 any attempt to send spam or execute a denial of service attack would trigger limits on resource 
 consumption and/or allowable addressing, and would be prevented. 
@@ -114,7 +116,7 @@ the lowest level sandbox eventually must have some fundamental yet limited acces
 such as memory, storage, threads, etc. So having multiple sandboxes is not necessary, and two sandboxes in 
 our design would be enough. But are two sandboxes indeed necessary? Why not just have one sandbox 
 that solves everything? The answer is that the kernel interface is extremely rich and hard to protect. 
-In order to have minimal touch into the kernel, as well as provide sufficient API for legacy applications, 
-we need to have more than one sandbox to complete the job. One sandbox focuses on protecting 
+In order to have minimal impact into the kernel, as well as provide sufficient API for legacy applications, 
+we need to have more than one sandbox to complete the job. \yanyan{What is the job?} One sandbox focuses on protecting 
 the kernel and providing POSIX API, the other sandbox deals with executing applications efficiently. 
-That is the reason for us to have at least two sandboxes.  
+That is the reason for us to have at least two sandboxes.  \yanyan{Some arguments are weak.}
