@@ -42,6 +42,7 @@ Opportunities for kernel exploitation are abundant. As an example consider the L
 which has been plagued by common software flaws, such as stack and heap buffer overflows 
 \cappos{It seems like overkill to have all CVEs have their own cite.  Perhaps
 just have one cite for the CVE system and then just list the number?}
+\yiwen{will fix this} 
 \cite{CVE:20093234, CVE:20131828, CVE:20132892}, NULL pointer and pointer arithmetic errors 
 \cite{CVE:20050736, CVE:20092698}, memory disclosure vulnerabilities 
 \cite{CVE:20093002, CVE:20104073}, use-after-free and format string bugs 
@@ -55,6 +56,8 @@ The exploitation of these bugs is particularly effective,
 despite the existence of kernel protection mechanisms, 
 due to the weak separation between user and kernel space.
 \cappos{What point are you trying to make with the last bit here?}
+\yiwen{I was trying to say that exploitation of bugs is effective because of bad separation 
+between user space and the kernel.}
 
 To build a secure computing system, it is critical to provide sufficient protection for the kernel and 
 prevent kernel exploitation. Many previous attempts, including OS virtualization, 
@@ -78,13 +81,13 @@ And the key is: the way they access the kernel has no difference than before, be
 know what's the best way to leverage the kernel securely. Essentially, these approaches move
 the attack surface from the previous place (between the user space and the kernel) to another place 
 (between the new proposed system and the kernel). The attack surface
-doesn't necessarily shrink.  \cappos{Is `shrinking' really the right thing
+does not necessarily shrink.  \cappos{Is `shrinking' really the right thing
 to consider?  I think we will argue against LOC as the metric.} 
 \yanyan{The attack surface is not necessarily reduced? Note: spell out doesn't as does not.}
 Therefore, the proposed solutions were not effective. 
 
 It would be more effective, if we can actually shrink the attack surface and have better control over 
-the interface exposed by the kernel. In another word, we need to be crystal clear about which portions of 
+the interface exposed by the kernel. In another word, we need to have precise information on which portions of 
 the kernel are safe and which portions of the kernel are risky.
 \yanyan{Crystal clear is colloquial, try to avoid in formal writing.}
 \cappos{The previous sentence is a key point.  We need to draw it out and
