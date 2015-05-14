@@ -7,39 +7,40 @@ our scope seem larger than what we can support w/ our results.}
 \yiwen{I think it is a good idea to mention hypervisors, and we can explicitly point out 
 the scope of our work, which is focused only on the OS kernels, not the hypervisors.}
 
-Privileged code \cappos{such as OS kernels and hypervisors} is an essential 
+Privileged code such as OS kernels and hypervisors is an essential 
 component of modern computer systems but 
 presents a number of security challenges. The privileged code itself is vulnerable 
 to attacks. When vulnerabilities in this code are exploited, other parts 
 of the system could be damaged.
 %\yanyan{why separate these two para? TCB is also privileged code.}
 For example, failures in the trusted computing base (TCB) can cause detrimental crashes, 
-such as complete system failures, privilege escalation, etc. 
+such as complete system failures, privilege escalation, etc. \yanyan{these 
+examples are still too abstract. Please use more concrete examples.}
 Decreasing the feasibility of exploitation of the kernel bugs, especially privilege escalation, 
 would be a substantial step toward stronger security for computer systems.
 
 Bugs in operating system kernels have motivated development of a diverse set of
 technologies to reduce these risks, such as OS virtualization, 
-system call filtering, library OSes, etc. \cappos{However, there are two
-major problems with these systems.  First,}  Unfortunately, these technologies 
-also harbor vulnerabilities that are exploitable.  \cappos{Second,}
-Even with these technologies in place, applications from the user space 
+system call filtering, library OSes, etc. However, there are two
+major problems with these systems.  First, these technologies 
+also harbor vulnerabilities that are exploitable.  Second,
+even with these technologies in place, applications from the user space 
 could still have access to a portion of the kernel that might contain 
 bugs and is risky to be exposed. \yanyan{Better use examples in these
 two cases to back up the argument.}
-\yiwen{Right, I will look for proper examples.}
+%\yiwen{Right, I will look for proper examples.}
 
 One contributing factor to these security problems 
 %associated with these existing technologies and potential
 %new designs 
 is that it is still unknown which portions of the privileged code are
-safe to expose, and which portions would be vulnerable and exploitable. 
+safe to expose, and which portions would be vulnerable. 
 One key missing puzzle is a standard method for quantifying the safety (or 
 risk) of the privileged code. 
 For example, is it a good practice to minimize \textit{the number of lines of code}?
 Is \textit{the number of API calls} a good metric for security?  \cappos{cites
-for these would be good.} \yiwen{will add later}
-Is avoiding files that have historically had bugs a viable approach?
+for these would be good.} %\yiwen{will add later}
+Is avoiding files that have historically had bugs a viable approach~\cite{lewis2013does}?
 \yanyan{Instead of asking questions, using citations
 will be stronger, eg, xxx used loc, yyy used number of calls. Questions feel abrupt..}
 \cappos{Need to refer to the sorts of sources mentioned in this paper: 
@@ -47,66 +48,66 @@ will be stronger, eg, xxx used loc, yyy used number of calls. Questions feel abr
 Case Study".  This refers to fairly close related work in the SE
 community.  If mentioned here, it should be a sentence clause and a few
 citations.  Section 3 can say more.}
-To the best of our knowledge, there is no quantitative metric \cappos{that
-is considered an effective way} to evaluate the 
-security of privileged code \cappos{perhaps end the sentence here?  I feel
-the rest gets away from what we want to say.} 
+\yanyan{I added this citation here~\cite{lewis2013does}. Is this the right place?}
+To the best of our knowledge, there is no quantitative metric that
+is considered an effective way to evaluate the 
+security of privileged code. 
+%\cappos{perhaps end the sentence here?  I feel
+%the rest gets away from what we want to say.} 
 %and provide insights into how to design a secure system that 
 %only interacts with the privileged code in a safe manner.
 
-In this paper, we propose a metric that quantitatively measures and evaluated 
-the security of the Linux kernel version 3.13.0-generic. \cappos{security of the Linux kernel versions X-Y} 
-\yiwen{Linux kernel version added} 
+System calls are the interface between user space and the kernel. 
 %The kernel trace profiling data is an important piece of information 
 %obtained by using our metric. 
-In our metric, we obtained the kernel trace data about which lines of kernel code 
-get executed by running user applications  
-\cappos{I don't understand the previous sentence.
-I think it may be clearer if rephrased.}
-\yiwen{rephrased} 
-This data reveals the use pattern of the kernel code 
-based upon applications running from the user space. The use pattern can then be
-leveraged to design new systems that have to meet specific requirements, 
-such as strong security or high performance. 
-\yanyan{I don't think it's appropriate to say "use pattern" can be leveraged to design
-something. Maybe the result of our data analysis?}
-To design and build secure systems, 
-our key hypothesis is that commonly used kernel paths contain fewer bugs, and are 
-safe to be exposed. 
-\yanyan{I feel this sentence (hypothesis) should come earlier, maybe 
-after the first sentence in this para.}
-Results from using our metric indicate that this hypothesis is reasonable, and 
-can be leveraged to create new design aiming at building secure systems. 
+To quantitatively measure and evaluate the security of privileged 
+code, Linux kernel version 3.13.0-generic in our case, we 
+obtain the kernel trace data about which lines of kernel code 
+get executed by invoking system calls through user applications.  
+%\cappos{I don't understand the previous sentence.
+%I think it may be clearer if rephrased.}
+%\yiwen{rephrased} 
+Our key hypothesis is that \textit{commonly used kernel paths 
+contain fewer bugs, and are safe to be exposed}. 
+Our analysis of this data reveals the use pattern of the kernel code, 
+and confirms our hypothesis (\S{\ref{sec.metric}}). Therefore, we use 
+\textbf{kernel coverage} as the metric to guide the design of new 
+systems that provide strong security (\S{\ref{sec.design}}, 
+\S{\ref{sec.implementation}}). 
+%\yanyan{I don't think it's appropriate to say "use pattern" can be leveraged to design
+%something. Maybe the result of our data analysis?}
+%To design and build secure systems, 
+%\yanyan{I feel this sentence (hypothesis) should come earlier, maybe 
+%after the first sentence in this para.}
+The results indicate that %this hypothesis is reasonable, and 
+the kernel coverage metric can be leveraged to build secure systems
+(\S{\ref{sec.evaluation}}). 
 
-To protect the kernel from being exploited, we came up with a new design that 
-we call ``safely-reimplement'', 
-\cappos{do we want to name it here?  We should probably call it 
-`safely-reimplement' so we can refer to it later.}
-which aims at providing strong isolation between the kernel space and the user space, 
-and thus providing better protection to the kernel. Our new design leverages 
-our metric to make better design decisions and build more effective system. 
-We implemented a sandbox system, Lind, based on this new design.
+To protect the kernel from being exploited, we aim to minimize the 
+kernel coverage of a system. Therefore, we ``safely-reimplement'' 
+%\cappos{do we want to name it here?  We should probably call it 
+%`safely-reimplement' so we can refer to it later.}
+system calls that are exposed to applications. 
+This provides strong isolation between the kernel space and the user space, 
+and better protection to the kernel. %Our new design leverages 
+%our metric to make better design decisions and build more effective system. 
+We implement a sandbox system, \textbf{Lind}.
 Lind minimizes the amount of risky privileged code that is reachable by a
-sandboxed program.  To allow a program that uses risky functionality to
-execute correctly, risky functionality is reimplemented inside a sandbox with
-a small trusted computing base (TCB) \cappos{comprised of safe code}. 
+sandboxed program.  To allow a program to %that uses risky functionality to
+execute correctly, risky system calls are reimplemented inside a sandbox with
+a small trusted computing base (TCB) comprised of safe code. 
 This additional level of sandboxing provides an outlet for risky functionality, without which
 legacy programs will not run, while containing security flaws in this code. 
 
-We evaluate Lind by comparing it against other similar systems 
-that are not designed using our metric. 
-\yanyan{will this raise an issue about cherry picking?}
-\yiwen{this is a really good question and a real concern, we may need some explanation about 
-how we pick the competing systems.}
+We evaluate Lind by comparing it against other similar systems.
 More specifically, we run user applications
-under Lind and other systems, and compare their kernel traces. In addition, we examined historical
-kernel bug reports to verify whose kernel trace is likely to trigger more
+under Lind and other systems, and compare their kernel coverage. In addition, we examined historical
+kernel bug reports to verify which kernel trace is more likely to trigger 
 kernel bugs. \cappos{I'm confused.  Do we use fuzzing or real apps for
 this?}
 \yiwen{for the comparison evaluation, I think it is more realistic to run user apps and some packages.} 
-Evaluation results showed that running applications in Lind is the least likely to trigger kernel bugs, 
-which indicates that designs, such as the prototype of Lind that uses our metric, 
-tend to result in more secure systems. 
+Evaluation results showed that running applications in Lind is the least likely to trigger kernel bugs. 
+This indicates that minimizing kernel coverage tends to result in more secure systems. 
 
 The main contributions of this paper are as follows:
 
@@ -123,27 +124,28 @@ we write the paper?  Do you want to say that we validated this on Linux
 over certain versions of the kernel?}
 \yiwen{I need to think about this.}
 
-\item We created a novel secure design paradigm ``safely-reimplement'' that 
-came from examining and leveraging our metric and key hypothesis 
-that commonly used kernel paths contain fewer bugs.  \cappos{Probably need a
-sentence to describe it here.} 
-\yiwen{added} 
-Our paradigm only uses safe functionality and reimplement risky functionality inside a sandbox to contain potential risks. 
-Using this new design, we implemented a sandbox we called Lind, which provides more secure environment
-for running applications and provide strong protection to the kernel. 
+\item We created a novel secure design ``safely-reimplement'' 
+by examining and leveraging our metric and key hypothesis 
+that commonly used kernel paths contain fewer bugs.  
+Our design uses safe system calls and reimplements risky system 
+calls inside a sandbox to contain potential risks. With this new design, 
+we implement a sandbox Lind that provides secure environment
+for applications and strong protection to the kernel. 
 
-\item Our evaluation results showed that implementation of our sandbox Lind did not trigger any of the 
-zero-day vulnerabilities we examined, 
+\item Our evaluation results show that the implementation of Lind does 
+not trigger any of the zero-day vulnerabilities we examined, 
 while systems built without using our metric have chances to trigger
 \cappos{What does this mean?  It sounds like we don't know.} 
-vulnerabilities, which suggests 
+vulnerabilities. This suggests 
 that our metric can help design and build more secure systems effectively.
-\yanyan{This sentence is too long.}
 \end{itemize}
 
 The remainder of this paper is organized as follows. 
-We discuss the motivation that drives our work in \S{2}. 
-In \S{3}, we propose our metric as the solution to solve the problem and provide detailed discussion about the metric.
-New architecture we designed using our metric is introduced in \S{4}. In \S{5}, we discuss the implementation of the design, a sandbox called Lind. 
-Evaluation results of Lind and the new design strategy are presented in \S{6}. 
-We then discuss related work in \S{7} and conclude in \S{8}. 
+We discuss the motivation that drives our work in \S{\ref{sec.motivation}}. 
+In \S{\ref{sec.metric}}, we propose our kernel coverage metric to solve the existing 
+security problems. %and provide detailed discussion about the metric.
+A new architecture using this metric is introduced in \S{\ref{sec.design}}. 
+In \S{\ref{sec.implementation}}, we describe the implementation of our design, 
+the sandbox Lind. Evaluation results of Lind and the new design strategy 
+are presented in \S{\ref{sec.evaluation}}. We then discuss related work in 
+\S{\ref{sec.related_work}} and conclude in \S{\ref{sec.conclusion}}. 
