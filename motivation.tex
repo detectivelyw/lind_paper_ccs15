@@ -116,3 +116,20 @@ kernel coverage metric, we know clearly about the potential dangers
 and safely-reimplement those risky kernel interface (or system calls) 
 to mitigate the potential damage. 
 %\yanyan{Without saying what this metric is, this paragraph reads a bit moot.}
+
+\subsection{Threat Model}
+In our threat model, threats refer to any behavior, either intentional or accidental, that may cause potential harm 
+to a system. Threats may be triggered by malicious code or bugs in non-malicious programs.
+
+%In order to fully execute their functions, 
+Applications need to have access to a set of privileges provided by 
+the operating system, usually exposed as system calls. The primary security goal of a secure system is to 
+restrict a program to some subset of privileges, usually by exposing a set of functions that mediate 
+access to the underlying operating system privileges. Threats occur when applications obtain access to 
+privileges that were not intentionally exposed by the system, thus escaping the protection 
+intended by the secure system~\cite{Repy:10}.
+
+To pose threats to a secure system, we assume that applications may use multiple threads to modify visible 
+state or issue concurrent requests to a system resource, which may trigger a race condition. Our goal is to prevent bugs in 
+the code from allowing an user program to escape the secure system to access the kernel code, and 
+possibly trigger kernel bugs.
