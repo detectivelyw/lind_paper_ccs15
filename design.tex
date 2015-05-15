@@ -1,13 +1,13 @@
 \section{A New Design for Building Secure Systems}
 \label{sec.design}
 
-\cappos{My thought: Section 2 argued we need to execute kernel code, including 
-some `risky' functionality to make programs work.  Section 3 argued that `risky'
-functionality is where vulnerabilities are likely to be.  Here we show how
-to have a design that allows `risky' functionality to execute without 
-causing a security problem.  Key idea: build a sandbox from safe functionality
-and reimplement risky functionality inside of it.  We say all of this, but
-some of it requires a careful read.}
+%\cappos{My thought: Section 2 argued we need to execute kernel code, including 
+%some `risky' functionality to make programs work.  Section 3 argued that `risky'
+%functionality is where vulnerabilities are likely to be.  Here we show how
+%to have a design that allows `risky' functionality to execute without 
+%causing a security problem.  Key idea: build a sandbox from safe functionality
+%and reimplement risky functionality inside of it.  We say all of this, but
+%some of it requires a careful read.}
 
 %\cappos{It is good to make the threat model explicit, but I'm not sure here
 %is the place to do it.  We've already been talking about zero-day kernel
@@ -27,21 +27,23 @@ Our goal is to allow applications to execute risky functionalities without trigg
 
 \subsection{Architecture Design}
 To build a secure system, our design needs to effectively construct a safe environment in which user programs 
-can run without triggering kernel bugs and break the whole system. 
-\yanyan{Why does "user programs 
-can run without worrying about triggering kernel bugs" result in a "secure system placed in the user space"?}
-\yiwen{Because there are only two places to put our system: the kernel space and the user space. Putting the system 
-in the kernel space would make the whole system become the trusted computing base, which will make it more vulnerable. 
-So the natural solution is to put the system in the user space.}
-To achieve this security goal, 
-our secure system should be placed in the user space, and exist as a key layer between the user applications 
-and the underlying OS kernel. To design a secure system, the following three 
+can run without triggering kernel bugs. Such a secure system can be 
+part of the kernel, or a user space program. To achieve a minimal 
+trusted computing base, we recommend 
+%\yanyan{Why does "user programs 
+%can run without worrying about triggering kernel bugs" result in a "secure system placed in the user space"?}
+%\yiwen{Because there are only two places to put our system: the kernel space and the user space. Putting the system 
+%in the kernel space would make the whole system become the trusted computing base, which will make it more vulnerable. 
+%So the natural solution is to put the system in the user space.}
+%To achieve this security goal, 
+such a secure system be placed in the user space, acting as a layer between the user applications 
+and the OS kernel. To design a secure system, the following three 
 questions need to be answered. 
 %First of all, how should our system access the kernel? Secondly, what interface 
 %should our system provide to the user programs? Finally, how to implement the inside of our system to make it work?
 
-The first key question is how should our system access the kernel. Since now we know 
-that commonly used kernel paths contain few bugs, it would be desirable to design a system that only access the 
+The first key question is \textit{how should our system access the kernel}. Since %now we know 
+commonly used kernel paths contain few bugs, it would be desirable to design a system that only access the 
 commonly used kernel paths. Through our findings in \S{\ref{sec.metric}}, we can see that commonly used kernel paths have relatively 
 small size. This indicates that it is possible to design a system with a very small 
 trusted computing base. Thus, our design should only access fundamental system 
@@ -51,28 +53,52 @@ set of safe system calls would satisfy this requirement.
 %This gives our design a very small trusted computing base that places only very limited trust in the kernel code. Therefore, 
 %As a result, our design barely has the chance to trigger kernel bugs and cause serious security problems. 
 
-The second question is what interface should our system provide to user programs. 
-Essentially, this represents the tradeoff between 
-security and functionality. Our goal is to provide strong protection to our system, therefore, security is prioritized. We are willing 
-to sacrifice certain functionality if better security can be achieved. \yanyan{I can't understand the relation between functionality vs. security and POSIX API.} 
-\yiwen{better functionality support requires more access to the kernel and use of more risky system calls, therefore will result in less security. restricted POSIX API is the 
-design decision we made, which puts security as the priority but also provides enough functionality.} 
-Thus, our design provides a POSIX API to user programs with 
-support of fundamental functions. In fact, a restricted POSIX API is good enough to support many popular applications, 
+The second question is \textit{what interface should our system provide to user programs}. 
+There is a tradeoff between security and functionality. For example, 
+the widely used POSIX API provides rich functionalities to run various 
+applications. However, POSIX API includes many risky system calls 
+that require substantial access to the kernel, and have resulted in 
+severe security vulnerabilities, such as \yanyan{add cites}.
+Our goal is to provide strong protection to the kernel, therefore, 
+security is a priority. 
+%\yanyan{I can't understand the relation between functionality vs. security and POSIX API.} 
+%\yiwen{better functionality support requires more access to the kernel and use of more risky system calls, therefore will result in less security. restricted POSIX API is the 
+%design decision we made, which puts security as the priority but also provides enough functionality.} 
+Thus, our design suggests a sandbox that provides a \textit{restricted} POSIX API to user programs, with 
+support of fundamental, commomnly used functions. In fact, a restricted POSIX API is good enough to support many popular applications, 
 and even some very complex legacy applications. \yanyan{Use citations to back up?}
+\yanyan{if restricted API can run complex apps, then we don't 
+need to reimplement? Maybe we should remove the last sentence.}
 
-Finally, how to implement our system? 
-To provide a restricted POSIX API that is sufficient to user programs, while accessing the kernel only in commonly used path requires our system to 
-reconstruct and reimplement many functions in our system. Since the reimplementation is difficult and may contain bugs 
-and raise security concerns, we require that the reimplementation done in a sandbox. In a contained 
-environment, the reimplementation can construct the POSIX API effectively, without breaking other parts of the system.  
+Finally, \textit{how to make our system useful to various user applications?} 
+With a restricted POSIX API that only accesses the commonly 
+used kernel path, our system cannot suffice many complex 
+applications' needs. It is normal for an application to require access
+to network and file system and modify their state. Access to risky 
+system calls is necessary. In order to construct a system that is 
+useful to applications, we reimplement many risky POSIX system calls. Since 
+any reimplementation is difficult and may contain bugs or raise 
+security concerns, we require a reimplementation inside a sandbox. 
+In a contained environment, the reimplementation can construct the risky part of
+the POSIX API effectively, without breaking other parts of the system.  
+\yanyan{I feel "the reimplementation can construct the 
+POSIX API effectively, without breaking other parts of the system"
+is a bit high level. Can we write something more concrete?}
+
+\yanyan{Can we provide a table of safe system calls that we did not
+reimplement + the risky system calls that we reimplemented? Or put 
+it on Lind wiki and use an URL to cite it.}
 
 \subsection{Summary}
-We have shown that using our finding that commonly used kernel paths contain few bugs as a key principle, a new design was created 
-for building secure systems. Our design accesses only commonly used kernel paths, placing very limited trust within the kernel code. 
-To provide sufficient functionality to user programs, our design safely reimplements fundamental functions inside a sandbox. Thus, many 
-popular user applications and legacy programs can be supported by the POSIX API our system provides, while security will not be violated 
+%We have shown that using our finding that commonly used kernel paths contain few bugs as a key principle, a new design was created 
+%for building secure systems. 
+Our design accesses only commonly used kernel paths, or safe POSIX
+system cals, placing very limited trust within the kernel code. 
+To provide sufficient functionality to user programs, our design 
+safely reimplements risky POSIX system cals inside a sandbox. Thus, many 
+popular user applications and legacy programs can be supported by 
+the POSIX API our system provides, while security will not be compromised
 with the isolation provided by the sandbox. 
 
-The design we described here does not rely on any specific technique or tool. To implement our design, it is possible to choose different techniques 
+Our design does not rely on any specific technique or tool. To implement our design, it is possible to choose different techniques 
 that suit well with specific needs or requirements. In the next section, we describe one implementation of our design. 
